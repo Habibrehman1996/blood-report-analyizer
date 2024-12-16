@@ -7,20 +7,23 @@ import re
 # Initialize EasyOCR Reader
 reader = easyocr.Reader(['en'], gpu=False)
 
-# Define normal ranges for common blood parameters
+# Define normal ranges with full and short forms
 NORMAL_RANGES = {
     "Hemoglobin": (13.5, 17.5),  # g/dL for males
     "Hb": (13.5, 17.5),          # Alternate name for Hemoglobin
-    "RBC": (4.7, 6.1),           # million/μL for males
-    "WBC": (4.5, 11.0),          # thousand/μL
-    "Platelets": (150, 450),     # thousand/μL
+    "Red Blood Cell": (4.7, 6.1),  # million/μL for males
+    "RBC": (4.7, 6.1),             # Alternate name for Red Blood Cell
+    "White Blood Cell": (4.5, 11.0),  # thousand/μL
+    "WBC": (4.5, 11.0),               # Alternate name for White Blood Cell
+    "Platelets": (150, 450),          # thousand/μL
+    "Plt": (150, 450),                # Alternate name for Platelets
 }
 
 # Function to analyze extracted text
 def analyze_blood_report(extracted_text):
     report = []
     for parameter, (low, high) in NORMAL_RANGES.items():
-        # Search for parameter in the text using regex
+        # Search for both full and short forms in the text using regex
         match = re.search(rf"{parameter}.*?(\d+\.?\d*)", extracted_text, re.IGNORECASE)
         if match:
             value = float(match.group(1))
