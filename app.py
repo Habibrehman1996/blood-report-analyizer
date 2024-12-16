@@ -1,12 +1,11 @@
+import os
 import streamlit as st
 from transformers import pipeline
 from PIL import Image
 import pytesseract
-import torch
 
-# Check if PyTorch is available
-if not torch.cuda.is_available():
-    st.warning("PyTorch CUDA is not available. CPU will be used.")
+# Install Tesseract at runtime for Streamlit Cloud
+os.system("apt-get update && apt-get install -y tesseract-ocr")
 
 # Load Hugging Face Model
 @st.cache_resource
