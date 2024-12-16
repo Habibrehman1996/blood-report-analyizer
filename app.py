@@ -1,13 +1,9 @@
-import os
-import pytesseract
+import easyocr
 from PIL import Image
 import streamlit as st
 
-# Install Tesseract on Streamlit Cloud during runtime
-os.system("apt-get update && apt-get install -y tesseract-ocr")
-
-# Set Tesseract executable path for pytesseract
-pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+# Initialize EasyOCR Reader
+reader = easyocr.Reader(['en'], gpu=False)
 
 # Streamlit UI
 st.title("AI Blood Report Analyzer")
@@ -22,15 +18,16 @@ if uploaded_image is not None:
         image = Image.open(uploaded_image)
         st.image(image, caption="Uploaded Blood Report", use_column_width=True)
 
-        # Extract text using Tesseract OCR
+        # Extract text using EasyOCR
         st.subheader("Extracting Text from Image...")
-        extracted_text = pytesseract.image_to_string(image)
+        extracted_text = reader.readtext(image, detail=0)
 
-        if not extracted_text.strip():
+        if not extracted_text:
             st.error("No text found in the uploaded image. Please try again with a clearer image.")
         else:
             # Display extracted text
-            st.text_area("Extracted Text", extracted_text, height=200)
+            extracted_text_combined = "\n".join(extracted_text)
+            st.text_area("Extracted Text", extracted_text_combined, height=200)
 
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
