@@ -2,6 +2,7 @@ import easyocr
 from PIL import Image
 import streamlit as st
 import numpy as np
+import re
 
 # Initialize EasyOCR Reader
 reader = easyocr.Reader(['en'], gpu=False)
@@ -9,6 +10,7 @@ reader = easyocr.Reader(['en'], gpu=False)
 # Define normal ranges for common blood parameters
 NORMAL_RANGES = {
     "Hemoglobin": (13.5, 17.5),  # g/dL for males
+    "Hb": (13.5, 17.5),          # Alternate name for Hemoglobin
     "RBC": (4.7, 6.1),           # million/μL for males
     "WBC": (4.5, 11.0),          # thousand/μL
     "Platelets": (150, 450),     # thousand/μL
@@ -16,7 +18,6 @@ NORMAL_RANGES = {
 
 # Function to analyze extracted text
 def analyze_blood_report(extracted_text):
-    import re
     report = []
     for parameter, (low, high) in NORMAL_RANGES.items():
         # Search for parameter in the text using regex
@@ -49,15 +50,16 @@ if uploaded_image is not None:
 
         # Extract text using EasyOCR
         st.subheader("Extracting Text from Image...")
-        extracted_text = reader.readtext(image_np, detail=0)
+        extracted_text_list = reader.readtext(image_np, detail=0, paragraph=True)
+        extracted_text_combined = " ".join(extracted_text_list).lower()
 
-        if not extracted_text:
+        # Display raw extracted text for debugging
+        st.subheader("Extracted Text (Debugging)")
+        st.text_area("Raw Extracted Text", extracted_text_combined, height=200)
+
+        if not extracted_text_combined.strip():
             st.error("No text found in the uploaded image. Please try again with a clearer image.")
         else:
-            # Combine extracted text
-            extracted_text_combined = " ".join(extracted_text)
-            st.text_area("Extracted Text", extracted_text_combined, height=200)
-
             # Analyze blood report
             st.subheader("Analysis of Blood Report")
             analysis = analyze_blood_report(extracted_text_combined)
